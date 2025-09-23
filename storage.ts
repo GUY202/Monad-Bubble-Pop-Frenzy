@@ -1,37 +1,35 @@
-// Fix: Created storage utility functions for high scores.
-import { ScoreEntry } from './types';
+// Implementing utility functions to manage high scores using localStorage.
+import { Score } from './types';
 
 const HIGH_SCORES_KEY = 'bubblePopHighScores';
-const MAX_SCORES = 10;
 
-export const getHighScores = (): ScoreEntry[] => {
+export const getHighScores = (): Score[] => {
   try {
     const scoresJSON = localStorage.getItem(HIGH_SCORES_KEY);
-    if (!scoresJSON) {
-      return [];
+    if (scoresJSON) {
+      return JSON.parse(scoresJSON);
     }
-    return JSON.parse(scoresJSON);
   } catch (error) {
-    console.error("Error loading high scores:", error);
-    return [];
+    console.error("Failed to parse high scores from localStorage", error);
   }
+  return [];
 };
 
-export const saveHighScore = (name: string, score: number): ScoreEntry[] => {
-  if (!name || score <= 0) return getHighScores();
-
-  const newScore: ScoreEntry = { name, score };
-  const highScores = getHighScores();
-
-  highScores.push(newScore);
-  highScores.sort((a, b) => b.score - a.score);
-  const updatedScores = highScores.slice(0, MAX_SCORES);
-  
+export const saveHighScores = (scores: Score[]): void => {
   try {
-    localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(updatedScores));
+    // Sort scores descending and keep top 10
+    const sortedScores = scores.sort((a, b) => b.score - a.score).slice(0, 10);
+    localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(sortedScores));
   } catch (error) {
-    console.error("Error saving high score:", error);
+    console.error("Failed to save high scores to localStorage", error);
   }
-
-  return updatedScores;
 };
+
+export const isNewHighScore = (score: number): boolean => {
+    if (score === 0) return false;
+    const highScores = getHighScores();
+    if (highScores.length < 10) {
+        return true;
+    }
+    return score > highScores[highScores.length - 1].score;
+}

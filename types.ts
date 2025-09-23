@@ -1,4 +1,4 @@
-// Fix: Populated empty types.ts file with required type definitions.
+// Defining the types for the application. This includes `Difficulty` enum for game levels, `Bubble` interface for the bubble objects, and `Score` interface for the leaderboard entries.
 export enum Difficulty {
   EASY = 'EASY',
   MEDIUM = 'MEDIUM',
@@ -13,7 +13,8 @@ export interface Bubble {
   speed: number; // animation duration in seconds
 }
 
-export interface ScoreEntry {
+export interface Score {
   name: string;
   score: number;
+  difficulty: Difficulty;
 }
