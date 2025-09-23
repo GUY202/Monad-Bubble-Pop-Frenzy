@@ -14,19 +14,12 @@ const Game: React.FC<GameProps> = ({ difficulty, onEndGame, onExit }) => {
     const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
     const [bubbles, setBubbles] = useState<BubbleType[]>([]);
     const gameAreaRef = useRef<HTMLDivElement>(null);
-    const popSoundRef = useRef<HTMLAudioElement | null>(null);
 
     const settings = DIFFICULTY_SETTINGS[difficulty];
 
-    useEffect(() => {
-        popSoundRef.current = new Audio(POP_SOUND_BASE64);
-    }, []);
-
     const playPopSound = useCallback(() => {
-        if (popSoundRef.current) {
-            popSoundRef.current.currentTime = 0;
-            popSoundRef.current.play().catch(e => console.error("Error playing sound:", e));
-        }
+        const audio = new Audio(POP_SOUND_BASE64);
+        audio.play().catch(e => console.error("Error playing sound:", e));
     }, []);
 
     const removeBubble = useCallback((id: number) => {
