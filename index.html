@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bubble Pop Frenzy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+      body {
+        font-family: 'Nunito', sans-serif;
+      }
+      .font-fredoka {
+        font-family: 'Fredoka One', cursive;
+      }
+      .bubble-fall {
+        animation: fall linear forwards;
+        transform: translateY(-150px);
+      }
+      @keyframes fall {
+        to {
+          transform: translateY(calc(100vh + 150px));
+        }
+      }
+      .bubble-pop {
+        animation: pop 0.1s ease-out forwards;
+      }
+      @keyframes pop {
+        to {
+          transform: scale(1.2);
+          opacity: 0;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+</head>
+  <body class="bg-sky-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
