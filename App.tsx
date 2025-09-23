@@ -26,7 +26,7 @@ const App: React.FC = () => {
     const renderContent = () => {
         switch (gameState) {
             case GameState.PLAYING:
-                return <Game difficulty={difficulty} onEndGame={endGame} />;
+                return <Game difficulty={difficulty} onEndGame={endGame} onExit={restartGame} />;
             case GameState.GAME_OVER:
                 return <GameOver score={finalScore} onRestart={restartGame} />;
             case GameState.MENU:

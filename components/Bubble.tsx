@@ -26,12 +26,13 @@ const Bubble: React.FC<BubbleComponentProps> = ({ bubbleData, onPop, onMiss }) =
             }}
             onClick={() => onPop(id)}
             onAnimationEnd={handleAnimationEnd}
+            aria-label="bubble"
         >
             <div
                 className="w-full h-full rounded-full"
                 style={{
                     backgroundColor: color,
-                    boxShadow: `inset -${size * 0.1}px -${size * 0.1}px ${size * 0.2}px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.4)`,
+                    boxShadow: `inset -${size * 0.1}px -${size * 0.1}px ${size * 0.2}px rgba(0,0,0,0.3), 0 0 ${size * 0.3}px ${color}`,
                 }}
             >
                 <div 

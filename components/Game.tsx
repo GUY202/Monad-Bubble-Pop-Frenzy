@@ -6,9 +6,10 @@ import Bubble from './Bubble';
 interface GameProps {
   difficulty: Difficulty;
   onEndGame: (score: number) => void;
+  onExit: () => void;
 }
 
-const Game: React.FC<GameProps> = ({ difficulty, onEndGame }) => {
+const Game: React.FC<GameProps> = ({ difficulty, onEndGame, onExit }) => {
     const [score, setScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
     const [bubbles, setBubbles] = useState<BubbleType[]>([]);
@@ -36,16 +37,13 @@ const Game: React.FC<GameProps> = ({ difficulty, onEndGame }) => {
         playPopSound();
         setScore(prevScore => prevScore + 1);
         
-        // Add pop animation class
         const bubbleElement = document.getElementById(`bubble-${id}`);
         if(bubbleElement) {
             bubbleElement.classList.add('bubble-pop');
-            // Remove after animation finishes to prevent memory leak
             setTimeout(() => {
                 removeBubble(id);
             }, 100);
         } else {
-            // Fallback if element not found
             removeBubble(id);
         }
 
@@ -83,23 +81,31 @@ const Game: React.FC<GameProps> = ({ difficulty, onEndGame }) => {
         }, settings.interval);
 
         return () => clearInterval(bubbleSpawner);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settings.interval, settings.speedRange]);
 
     return (
         <div className="w-full h-screen max-w-2xl mx-auto flex flex-col">
-            <div className="flex justify-between items-center p-4 bg-black/20 rounded-t-2xl text-white font-fredoka text-2xl md:text-3xl z-10">
-                <div>Score: <span className="text-amber-300">{score}</span></div>
-                <div>Time: <span className="text-amber-300">{timeLeft}</span></div>
+            <div className="grid grid-cols-3 items-center p-4 bg-black/40 rounded-t-2xl text-white font-fredoka text-lg md:text-2xl z-10">
+                <div className="text-left">Score: <span className="text-cyan-300 font-bold">{score}</span></div>
+                <div className="text-center">Time: <span className="text-cyan-300 font-bold">{timeLeft}</span></div>
+                <div className="text-right">
+                    <button 
+                        onClick={onExit}
+                        aria-label="Exit Game"
+                        className="bg-pink-600 text-white font-bold py-2 px-4 rounded-lg text-base md:text-lg transition-all hover:bg-pink-700 hover:shadow-lg hover:shadow-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-opacity-75"
+                    >
+                        Exit
+                    </button>
+                </div>
             </div>
 
             <div 
                 ref={gameAreaRef}
-                className="relative w-full flex-grow bg-gradient-to-b from-yellow-700 via-yellow-800 to-yellow-900 overflow-hidden rounded-b-2xl shadow-inner-lg"
+                className="relative w-full flex-grow bg-gradient-to-b from-slate-900 to-indigo-900 overflow-hidden rounded-b-2xl"
                 style={{
-                    boxShadow: 'inset 0 0 25px rgba(0,0,0,0.5)',
-                    backgroundSize: '40px 40px',
-                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)'
+                    boxShadow: 'inset 0 0 25px rgba(0,0,0,0.7)',
+                    backgroundSize: '50px 50px',
+                    backgroundImage: 'linear-gradient(to right, rgba(14, 165, 233, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(14, 165, 233, 0.1) 1px, transparent 1px)'
                 }}
             >
                 {bubbles.map(bubble => (
