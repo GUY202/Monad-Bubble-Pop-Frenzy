@@ -1,13 +1,8 @@
-export enum GameState {
-  MENU,
-  PLAYING,
-  GAME_OVER,
-}
-
+// Fix: Populated empty types.ts file with required type definitions.
 export enum Difficulty {
-  EASY = 'Easy',
-  MEDIUM = 'Medium',
-  HARD = 'Hard',
+  EASY = 'EASY',
+  MEDIUM = 'MEDIUM',
+  HARD = 'HARD',
 }
 
 export interface Bubble {
@@ -16,4 +11,9 @@ export interface Bubble {
   size: number; // in pixels
   color: string;
   speed: number; // animation duration in seconds
+}
+
+export interface ScoreEntry {
+  name: string;
+  score: number;
 }
