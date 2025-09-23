@@ -1,5 +1,5 @@
 {
   "name": "Monad Bubble Pop Frenzy",
-  "description": "A fun and addictive bubble popping game. Test your reflexes by popping bubbles as they fall. Choose from three difficulty levels and aim for the high score before the timer runs out!",
+  "description": "A fun and addictive bubble popping game with Frame wallet integration. Test your reflexes, connect your wallet, and get your name on the global leaderboard!",
   "requestFramePermissions": []
 }
