@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Difficulty, Bubble as BubbleType } from '../types';
-import { DIFFICULTY_SETTINGS, BUBBLE_COLORS, GAME_DURATION, POP_SOUND_BASE64 } from '../constants';
+import { DIFFICULTY_SETTINGS, BUBBLE_COLORS, GAME_DURATION } from '../constants';
 import Bubble from './Bubble';
 
 interface GameProps {
@@ -17,17 +17,11 @@ const Game: React.FC<GameProps> = ({ difficulty, onEndGame, onExit }) => {
 
     const settings = DIFFICULTY_SETTINGS[difficulty];
 
-    const playPopSound = useCallback(() => {
-        const audio = new Audio(POP_SOUND_BASE64);
-        audio.play().catch(e => console.error("Error playing sound:", e));
-    }, []);
-
     const removeBubble = useCallback((id: number) => {
         setBubbles(prev => prev.filter(bubble => bubble.id !== id));
     }, []);
 
     const popBubble = useCallback((id: number) => {
-        playPopSound();
         setScore(prevScore => prevScore + 1);
         
         const bubbleElement = document.getElementById(`bubble-${id}`);
@@ -40,7 +34,7 @@ const Game: React.FC<GameProps> = ({ difficulty, onEndGame, onExit }) => {
             removeBubble(id);
         }
 
-    }, [playPopSound, removeBubble]);
+    }, [removeBubble]);
 
     useEffect(() => {
         if (timeLeft <= 0) {
