@@ -15,3 +15,16 @@ export const BUBBLE_COLORS = [
 ];
 
 export const GAME_DURATION = 60;
+
+// Using placeholder details for Monad Testnet. Replace with official details when available.
+export const MONAD_NETWORK_CONFIG = {
+  chainId: '0x13881', // 80001 (Polygon Mumbai Testnet as placeholder)
+  chainName: 'Monad Testnet',
+  nativeCurrency: {
+    name: 'MON',
+    symbol: 'MON',
+    decimals: 18,
+  },
+  rpcUrls: ['https://rpc-mumbai.maticvigil.com/'], // Placeholder RPC
+  blockExplorerUrls: ['https://mumbai.polygonscan.com/'], // Placeholder Explorer
+};

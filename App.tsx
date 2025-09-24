@@ -6,15 +6,17 @@ import { Difficulty, LeaderboardEntry } from './types';
 import { getPersonalBest, submitScore } from './storage';
 import Leaderboard from './components/Leaderboard';
 import ConnectWallet from './components/ConnectWallet';
+import { MONAD_NETWORK_CONFIG } from './constants';
 
 type GameState = 'CONNECTING_WALLET' | 'MENU' | 'PLAYING' | 'GAME_OVER' | 'LEADERBOARD';
 
 const App: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>('CONNECTING_WALLET');
+  const [gameState, setGameState] = = useState<GameState>('CONNECTING_WALLET');
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string>('');
   const [personalBest, setPersonalBest] = useState<number>(0);
+  const [networkWarning, setNetworkWarning] = useState<string | null>(null);
   
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.EASY);
   const [lastScore, setLastScore] = useState(0);
@@ -24,12 +26,18 @@ const App: React.FC = () => {
     setWalletAddress(address);
 
     try {
-      const balanceWei = await provider.request({ method: 'eth_getBalance', params: [address, 'latest'] });
-      // Using BigInt for safety with large numbers, then converting
-      const balanceEth = Number(BigInt(balanceWei)) / 1e18;
-      setBalance(`${balanceEth.toFixed(4)} MON`);
+      const currentChainId = await provider.request({ method: 'eth_chainId' });
+      if (currentChainId === MONAD_NETWORK_CONFIG.chainId) {
+        setNetworkWarning(null);
+        const balanceWei = await provider.request({ method: 'eth_getBalance', params: [address, 'latest'] });
+        const balanceEth = Number(BigInt(balanceWei)) / 1e18;
+        setBalance(`${balanceEth.toFixed(4)} MON`);
+      } else {
+        setNetworkWarning('You are not on Monad network. Some features may not work until you switch.');
+        setBalance('0 MON');
+      }
     } catch (error) {
-      console.error("Failed to fetch balance:", error);
+      console.error("Failed to fetch balance or network info:", error);
       setBalance('N/A');
     }
 
@@ -104,6 +112,11 @@ const App: React.FC = () => {
   return (
     <main className="relative w-full h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans">
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
+      {networkWarning && (
+        <div className="absolute top-0 left-0 right-0 bg-yellow-600/90 text-center text-white p-2 text-sm z-30 shadow-lg">
+          {networkWarning}
+        </div>
+      )}
        {walletAddress && gameState !== 'CONNECTING_WALLET' && (
         <div className="absolute top-4 right-4 z-20 bg-black/40 text-xs text-cyan-300 font-mono p-2 rounded-lg border border-white/10 flex flex-col items-end gap-1">
           <span>{truncateAddress(walletAddress)}</span>

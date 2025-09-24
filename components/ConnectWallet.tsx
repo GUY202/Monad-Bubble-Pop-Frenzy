@@ -20,20 +20,6 @@ interface ConnectWalletProps {
   onConnected: (address: string, provider: any) => void;
 }
 
-// Using placeholder details for Monad Testnet. Replace with official details when available.
-const MONAD_NETWORK_CONFIG = {
-  chainId: '0x13881', // 80001 (Polygon Mumbai Testnet as placeholder)
-  chainName: 'Monad Testnet',
-  nativeCurrency: {
-    name: 'MON',
-    symbol: 'MON',
-    decimals: 18,
-  },
-  rpcUrls: ['https://rpc-mumbai.maticvigil.com/'], // Placeholder RPC
-  blockExplorerUrls: ['https://mumbai.polygonscan.com/'], // Placeholder Explorer
-};
-
-
 // SVG Icons for wallets
 const FrameIcon = () => (
     <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -165,31 +151,6 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
 
         setDetectedWallets(wallets);
     }, []);
-
-    const trySwitchOrAddNetwork = async (provider: any) => {
-        try {
-            await provider.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: MONAD_NETWORK_CONFIG.chainId }],
-            });
-        } catch (switchError: any) {
-            // This error code indicates that the chain has not been added to MetaMask.
-            if (switchError.code === 4902) {
-                try {
-                    await provider.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [MONAD_NETWORK_CONFIG],
-                    });
-                } catch (addError) {
-                    throw new Error("Failed to add Monad network. Please add it manually.");
-                }
-            } else if (switchError.code === 4001) {
-                 throw new Error("Please switch to Monad network in your wallet to continue.");
-            } else {
-                 throw new Error("Failed to switch network. Please try again.");
-            }
-        }
-    };
     
     const handleConnectClick = () => {
         setError(null);
@@ -214,9 +175,6 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
             if (!accounts || accounts.length === 0) {
                 throw new Error('No accounts found. Please unlock your wallet or create an account.');
             }
-
-            await trySwitchOrAddNetwork(provider);
-
             onConnected(accounts[0], provider);
 
         } catch (err: any) {
