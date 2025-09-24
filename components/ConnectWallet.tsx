@@ -20,6 +20,19 @@ interface ConnectWalletProps {
   onConnected: (address: string, provider: any) => void;
 }
 
+const MONAD_NETWORK_CONFIG = {
+  chainId: '0x138d4', // 80084
+  chainName: 'Monad Devnet',
+  nativeCurrency: {
+    name: 'MON',
+    symbol: 'MON',
+    decimals: 18,
+  },
+  rpcUrls: ['https://devnet.monad.xyz/'],
+  blockExplorerUrls: ['https://explorer.devnet.monad.xyz/'],
+};
+
+
 // SVG Icons for wallets
 const FrameIcon = () => (
     <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -166,23 +179,57 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
         }
     };
 
+    const switchToMonadNetwork = async (provider: any) => {
+        try {
+            await provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: MONAD_NETWORK_CONFIG.chainId }],
+            });
+        } catch (switchError: any) {
+            // This error code indicates that the chain has not been added to the wallet.
+            if (switchError.code === 4902) {
+                try {
+                    await provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [MONAD_NETWORK_CONFIG],
+                    });
+                } catch (addError) {
+                    console.error('Failed to add Monad network:', addError);
+                    throw new Error('Failed to add Monad network. Please add it manually.');
+                }
+            } else {
+                console.error('Failed to switch network:', switchError);
+                throw new Error('Failed to switch to Monad network.');
+            }
+        }
+    };
+
     const handleWalletSelect = async (provider: any) => {
         setIsConnecting(true);
         setShowWalletModal(false);
         setError(null);
         try {
             const accounts = await provider.request({ method: 'eth_requestAccounts' });
-            if (accounts && accounts.length > 0) {
-                onConnected(accounts[0], provider);
-            } else {
-                setError('No accounts found. Please make sure your wallet is set up.');
+            if (!accounts || accounts.length === 0) {
+                throw new Error('No accounts found. Please unlock your wallet or create an account.');
             }
-        } catch (err) {
+
+            // After connecting, ensure the wallet is on the correct network
+            await switchToMonadNetwork(provider);
+
+            onConnected(accounts[0], provider);
+
+        } catch (err: any) {
             console.error("Wallet connection error:", err);
-            setError('Connection failed. Please try again.');
+            const message = err.message?.includes('User rejected') 
+              ? 'Request rejected. Please try again.' 
+              : err.message || 'Connection failed. An unknown error occurred.';
+            setError(message);
+        } finally {
+            setIsConnecting(false);
         }
-        setIsConnecting(false);
     };
+
 
     const WalletSelectionModal = () => (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" aria-modal="true" role="dialog">

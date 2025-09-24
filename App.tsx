@@ -26,8 +26,8 @@ const App: React.FC = () => {
     try {
       const balanceWei = await provider.request({ method: 'eth_getBalance', params: [address, 'latest'] });
       // Using BigInt for safety with large numbers, then converting
-      const balanceEth = Number(BigInt(balanceWei)) / 1e18;
-      setBalance(`${balanceEth.toFixed(4)} ETH`);
+      const balanceMon = Number(BigInt(balanceWei)) / 1e18;
+      setBalance(`${balanceMon.toFixed(4)} MON`);
     } catch (error) {
       console.error("Failed to fetch balance:", error);
       setBalance('N/A');
