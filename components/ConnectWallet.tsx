@@ -10,6 +10,7 @@ declare global {
       providers?: any[];
       isMetaMask?: boolean;
       isCoinbaseWallet?: boolean;
+      isRabby?: boolean;
     };
     coinbaseWalletExtension?: any;
   }
@@ -38,6 +39,11 @@ const CoinbaseIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="12" fill="#0052FF"/>
         <path d="M6 6H18V18H6V6Z" fill="white"/>
+    </svg>
+);
+const RabbyIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fillRule="evenodd" clipRule="evenodd" d="M15.9642 3.96424C16.9038 4.90381 17.4999 6.20381 17.4999 7.56824V10.4999C17.4999 12.1568 16.1568 13.4999 14.4999 13.4999H9.49994C7.84308 13.4999 6.49994 12.1568 6.49994 10.4999V7.56824C6.49994 6.20381 7.09608 4.90381 8.03565 3.96424L8.74272 3.25717C9.14028 2.85961 9.77385 2.85961 10.1714 3.25717L11.9999 5.08569L13.8284 3.25717C14.226 2.85961 14.8595 2.85961 15.2571 3.25717L15.9642 3.96424ZM12.9999 16.4999C12.9999 15.9476 12.5522 15.4999 11.9999 15.4999C11.4476 15.4999 10.9999 15.9476 10.9999 16.4999V17.4999H12.9999V16.4999ZM15.9999 19.4999C15.9999 17.567 14.4329 16 12.4999 16H11.4999C9.56694 16 7.99994 17.567 7.99994 19.4999V20.9999H15.9999V19.4999Z" fill="white"/>
     </svg>
 );
 const GenericWalletIcon = () => (
@@ -77,7 +83,6 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showWalletModal, setShowWalletModal] = useState(false);
-    // FIX: Replaced JSX.Element with React.ReactElement to fix "Cannot find namespace 'JSX'" error.
     const [detectedWallets, setDetectedWallets] = useState<{ id: string; name: string; icon: React.ReactElement; provider: any }[]>([]);
 
     useEffect(() => {
@@ -89,13 +94,25 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
                 getProvider: () => window.frame?.ethereum,
             },
             {
+                id: 'rabby',
+                name: 'Rabby Wallet',
+                icon: <RabbyIcon />,
+                getProvider: () => {
+                    if (!window.ethereum) return undefined;
+                    const provider = window.ethereum.providers?.find((p: any) => p.isRabby) ?? (window.ethereum.isRabby ? window.ethereum : undefined);
+                    return provider;
+                },
+            },
+            {
                 id: 'metamask',
                 name: 'MetaMask',
                 icon: <MetaMaskIcon />,
                 getProvider: () => {
                     if (!window.ethereum) return undefined;
-                    const provider = window.ethereum.providers?.find((p: any) => p.isMetaMask) ?? (window.ethereum.isMetaMask ? window.ethereum : undefined);
-                    return provider;
+                    const provider = window.ethereum.providers?.find((p: any) => p.isMetaMask && !p.isRabby);
+                    if (provider) return provider;
+                    if (window.ethereum.isMetaMask && !window.ethereum.isRabby) return window.ethereum;
+                    return undefined;
                 },
             },
             {
@@ -110,12 +127,19 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
             },
         ];
 
+        const foundProviders = new Set();
         let wallets = providerMetas
             .map(meta => ({ ...meta, provider: meta.getProvider() }))
-            .filter(wallet => wallet.provider);
+            .filter(wallet => {
+                if (!wallet.provider) return false;
+                // Deduplicate based on the provider object to avoid showing the same wallet twice
+                if (foundProviders.has(wallet.provider)) return false;
+                foundProviders.add(wallet.provider);
+                return true;
+            });
             
-        // Add a generic fallback if a non-identified provider is present at window.ethereum
-        if (window.ethereum && !wallets.some(w => w.provider === window.ethereum) && !window.ethereum.providers) {
+        // Add a generic fallback for any other wallet (like Brave Wallet) that hasn't been identified.
+        if (window.ethereum && !foundProviders.has(window.ethereum)) {
              wallets.push({
                 id: 'default',
                 name: 'Wallet',
