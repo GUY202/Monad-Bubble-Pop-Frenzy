@@ -18,6 +18,7 @@ declare global {
 
 interface ConnectWalletProps {
   onConnected: (address: string, provider: any) => void;
+  onPlayAsGuest: () => void;
 }
 
 // SVG Icons for wallets
@@ -79,7 +80,7 @@ const BackgroundBubbles = () => {
 };
 
 
-const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
+const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected, onPlayAsGuest }) => {
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showWalletModal, setShowWalletModal] = useState(false);
@@ -228,20 +229,31 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
                        </div>
                     </div>
                     <h1 className="text-5xl md:text-6xl font-bold mb-2 text-cyan-300 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] glow-text">Welcome!</h1>
-                    <p className="text-lg md:text-xl mb-8 text-slate-300">Connect your wallet to join the Frenzy</p>
-                    <button
-                      onClick={handleConnectClick}
-                      disabled={isConnecting}
-                      className="bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold py-4 px-8 rounded-lg text-2xl transition-all duration-300 ease-in-out hover:from-cyan-400 hover:to-indigo-500 focus:outline-none focus:ring-4 focus:ring-cyan-300/50 disabled:bg-gray-500 disabled:from-gray-500 disabled:shadow-none disabled:cursor-wait btn-pulse-glow flex items-center justify-center mx-auto"
-                    >
-                       {isConnecting && (
-                          <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                        )}
-                      {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-                    </button>
+                    <p className="text-lg md:text-xl mb-8 text-slate-300">Connect your wallet or play as a guest</p>
+
+                    <div className="flex flex-col items-center gap-4 w-full max-w-xs mx-auto">
+                        <button
+                          onClick={handleConnectClick}
+                          disabled={isConnecting}
+                          className="w-full bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold py-4 px-8 rounded-lg text-2xl transition-all duration-300 ease-in-out hover:from-cyan-400 hover:to-indigo-500 focus:outline-none focus:ring-4 focus:ring-cyan-300/50 disabled:bg-gray-500 disabled:from-gray-500 disabled:shadow-none disabled:cursor-wait btn-pulse-glow flex items-center justify-center"
+                        >
+                           {isConnecting && (
+                              <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            )}
+                          {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                        </button>
+                        <button
+                            onClick={onPlayAsGuest}
+                            disabled={isConnecting}
+                            className="w-full bg-black/20 border border-slate-600 text-slate-300 font-bold py-3 px-8 rounded-lg text-xl transition-all hover:bg-slate-700/50 hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Play as Guest
+                        </button>
+                    </div>
+
                     {error && 
                       <div className="bg-red-900/50 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg relative mt-6 max-w-md mx-auto" role="alert">
                         <span className="block sm:inline">{error}</span>

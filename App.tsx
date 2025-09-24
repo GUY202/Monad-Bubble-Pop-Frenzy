@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [isOnMonadNetwork, setIsOnMonadNetwork] = useState<boolean>(false);
+  const [isGuest, setIsGuest] = useState<boolean>(false);
   const [nickname, setNickname] = useState<string>('');
   const [personalBest, setPersonalBest] = useState<number>(0);
   
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [isNewHighScore, setIsNewHighScore] = useState(false);
 
   const handleWalletConnected = async (address: string, provider: any) => {
+    setIsGuest(false);
     setWalletAddress(address);
 
     try {
@@ -46,11 +48,22 @@ const App: React.FC = () => {
     setPersonalBest(bestScore);
     setGameState('MENU');
   };
+  
+  const handlePlayAsGuest = async () => {
+    setIsGuest(true);
+    setWalletAddress(null);
+    setBalance(null);
+    setIsOnMonadNetwork(false);
+    const bestScore = await getPersonalBest('GUEST_PLAYER');
+    setPersonalBest(bestScore);
+    setGameState('MENU');
+  };
 
   const handleDisconnect = () => {
     setWalletAddress(null);
     setBalance(null);
     setIsOnMonadNetwork(false);
+    setIsGuest(false);
     setNickname('');
     setGameState('CONNECTING_WALLET');
   };
@@ -66,12 +79,16 @@ const App: React.FC = () => {
 
   const handleEndGame = async (finalScore: number) => {
     setLastScore(finalScore);
-    if (walletAddress) {
+    
+    const userIdentifier = walletAddress || (isGuest ? 'GUEST_PLAYER' : null);
+    
+    if (userIdentifier) {
       const newHighScore = await submitScore({
         nickname,
         score: finalScore,
         difficulty,
-        walletAddress
+        walletAddress: userIdentifier,
+        isGuest: isGuest,
       });
       setIsNewHighScore(newHighScore);
       if (newHighScore) {
@@ -96,7 +113,7 @@ const App: React.FC = () => {
   const renderGameState = () => {
     switch (gameState) {
       case 'CONNECTING_WALLET':
-        return <ConnectWallet onConnected={handleWalletConnected} />;
+        return <ConnectWallet onConnected={handleWalletConnected} onPlayAsGuest={handlePlayAsGuest} />;
       case 'PLAYING':
         return <Game difficulty={difficulty} onEndGame={handleEndGame} onExit={handleExit} />;
       case 'GAME_OVER':
@@ -121,24 +138,31 @@ const App: React.FC = () => {
   return (
     <main className="relative w-full h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans">
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-       {walletAddress && gameState !== 'CONNECTING_WALLET' && (
+       {(walletAddress || isGuest) && gameState !== 'CONNECTING_WALLET' && (
         <div className="absolute top-4 right-4 z-20 bg-black/40 text-xs text-cyan-300 font-mono p-2 rounded-lg border border-white/10 flex items-center gap-3">
-            <div className="flex flex-col items-end">
-                <span>{truncateAddress(walletAddress)}</span>
-                {isOnMonadNetwork ? (
-                    balance !== null && (
-                        <span className="text-yellow-400 font-sans font-bold text-sm">{balance}</span>
-                    )
-                ) : (
-                    <span className="text-yellow-500 text-[10px] text-right mt-0.5">
-                        Not on Monad network — balance unavailable
-                    </span>
-                )}
-            </div>
+            {isGuest ? (
+                <div className="flex flex-col items-end">
+                    <span>Guest Player</span>
+                    <span className="text-yellow-400 font-sans font-bold text-sm">PB: {personalBest}</span>
+                </div>
+            ) : walletAddress && (
+                <div className="flex flex-col items-end">
+                    <span>{truncateAddress(walletAddress)}</span>
+                    {isOnMonadNetwork ? (
+                        balance !== null && (
+                            <span className="text-yellow-400 font-sans font-bold text-sm">{balance}</span>
+                        )
+                    ) : (
+                        <span className="text-yellow-500 text-[10px] text-right mt-0.5">
+                            Not on Monad network — balance unavailable
+                        </span>
+                    )}
+                </div>
+            )}
             <button
                 onClick={handleDisconnect}
                 className="bg-pink-600/50 hover:bg-pink-500/50 text-white font-bold p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-pink-400"
-                aria-label="Disconnect Wallet"
+                aria-label={isGuest ? "Exit Guest Mode" : "Disconnect Wallet"}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

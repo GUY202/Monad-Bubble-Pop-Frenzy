@@ -55,18 +55,27 @@ const savePersonalBest = (walletAddress: string, score: number): void => {
 
 // --- SUBMIT SCORE (Combined Logic) ---
 
-export const submitScore = async (entry: Omit<LeaderboardEntry, 'walletAddress'> & { walletAddress: string }): Promise<boolean> => {
+export const submitScore = async (entry: Omit<LeaderboardEntry, 'walletAddress'> & { walletAddress: string, isGuest?: boolean }): Promise<boolean> => {
   if (!entry.walletAddress) {
-    console.error("Wallet address is required to submit a score.");
+    console.error("User identifier (wallet or guest) is required to submit a score.");
     return Promise.resolve(false);
   }
 
-  // Update Leaderboard
-  const leaderboard = await getLeaderboard();
-  leaderboard.push(entry);
-  saveLeaderboard(leaderboard);
+  // Update Leaderboard only for non-guest users
+  if (!entry.isGuest) {
+    const leaderboard = await getLeaderboard();
+    // Ensure we only push entries that match the LeaderboardEntry type
+    const leaderboardEntry: LeaderboardEntry = {
+        nickname: entry.nickname,
+        score: entry.score,
+        difficulty: entry.difficulty,
+        walletAddress: entry.walletAddress
+    };
+    leaderboard.push(leaderboardEntry);
+    saveLeaderboard(leaderboard);
+  }
 
-  // Check and Update Personal Best
+  // Check and Update Personal Best (for both guests and wallet users)
   const personalBests = getPersonalBests();
   const currentBest = personalBests[entry.walletAddress.toLowerCase()] || 0;
   
