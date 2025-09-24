@@ -248,7 +248,7 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected, onPlayAsGues
                         <button
                             onClick={onPlayAsGuest}
                             disabled={isConnecting}
-                            className="w-full bg-black/20 border border-slate-600 text-slate-300 font-bold py-3 px-8 rounded-lg text-xl transition-all hover:bg-slate-700/50 hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-black/20 border border-slate-600 text-slate-300 font-bold py-3 px-8 rounded-lg text-xl transition-all hover:bg-slate-700/50 hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:opacity-50 disabled:cursor-not-allowed btn-pulse-glow-guest"
                         >
                             Play as Guest
                         </button>

@@ -29,7 +29,7 @@ const Game: React.FC<GameProps> = ({ difficulty, onEndGame, onExit }) => {
             bubbleElement.classList.add('bubble-pop');
             setTimeout(() => {
                 removeBubble(id);
-            }, 100);
+            }, 500); // Match particle animation duration
         } else {
             removeBubble(id);
         }
