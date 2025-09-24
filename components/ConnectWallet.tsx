@@ -20,16 +20,17 @@ interface ConnectWalletProps {
   onConnected: (address: string, provider: any) => void;
 }
 
+// Using placeholder details for Monad Testnet. Replace with official details when available.
 const MONAD_NETWORK_CONFIG = {
-  chainId: '0x138d4', // 80084
-  chainName: 'Monad Devnet',
+  chainId: '0x13881', // 80001 (Polygon Mumbai Testnet as placeholder)
+  chainName: 'Monad Testnet',
   nativeCurrency: {
     name: 'MON',
     symbol: 'MON',
     decimals: 18,
   },
-  rpcUrls: ['https://devnet.monad.xyz/'],
-  blockExplorerUrls: ['https://explorer.devnet.monad.xyz/'],
+  rpcUrls: ['https://rpc-mumbai.maticvigil.com/'], // Placeholder RPC
+  blockExplorerUrls: ['https://mumbai.polygonscan.com/'], // Placeholder Explorer
 };
 
 
@@ -164,6 +165,31 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
 
         setDetectedWallets(wallets);
     }, []);
+
+    const trySwitchOrAddNetwork = async (provider: any) => {
+        try {
+            await provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: MONAD_NETWORK_CONFIG.chainId }],
+            });
+        } catch (switchError: any) {
+            // This error code indicates that the chain has not been added to MetaMask.
+            if (switchError.code === 4902) {
+                try {
+                    await provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [MONAD_NETWORK_CONFIG],
+                    });
+                } catch (addError) {
+                    throw new Error("Failed to add Monad network. Please add it manually.");
+                }
+            } else if (switchError.code === 4001) {
+                 throw new Error("Please switch to Monad network in your wallet to continue.");
+            } else {
+                 throw new Error("Failed to switch network. Please try again.");
+            }
+        }
+    };
     
     const handleConnectClick = () => {
         setError(null);
@@ -179,31 +205,6 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
         }
     };
 
-    const switchToMonadNetwork = async (provider: any) => {
-        try {
-            await provider.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: MONAD_NETWORK_CONFIG.chainId }],
-            });
-        } catch (switchError: any) {
-            // This error code indicates that the chain has not been added to the wallet.
-            if (switchError.code === 4902) {
-                try {
-                    await provider.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [MONAD_NETWORK_CONFIG],
-                    });
-                } catch (addError) {
-                    console.error('Failed to add Monad network:', addError);
-                    throw new Error('Failed to add Monad network. Please add it manually.');
-                }
-            } else {
-                console.error('Failed to switch network:', switchError);
-                throw new Error('Failed to switch to Monad network.');
-            }
-        }
-    };
-
     const handleWalletSelect = async (provider: any) => {
         setIsConnecting(true);
         setShowWalletModal(false);
@@ -214,8 +215,7 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ onConnected }) => {
                 throw new Error('No accounts found. Please unlock your wallet or create an account.');
             }
 
-            // After connecting, ensure the wallet is on the correct network
-            await switchToMonadNetwork(provider);
+            await trySwitchOrAddNetwork(provider);
 
             onConnected(accounts[0], provider);
 
