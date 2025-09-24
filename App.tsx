@@ -12,6 +12,7 @@ type GameState = 'CONNECTING_WALLET' | 'MENU' | 'PLAYING' | 'GAME_OVER' | 'LEADE
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('CONNECTING_WALLET');
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [balance, setBalance] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string>('');
   const [personalBest, setPersonalBest] = useState<number>(0);
   
@@ -19,8 +20,19 @@ const App: React.FC = () => {
   const [lastScore, setLastScore] = useState(0);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
 
-  const handleWalletConnected = async (address: string) => {
+  const handleWalletConnected = async (address: string, provider: any) => {
     setWalletAddress(address);
+
+    try {
+      const balanceWei = await provider.request({ method: 'eth_getBalance', params: [address, 'latest'] });
+      // Using BigInt for safety with large numbers, then converting
+      const balanceEth = Number(BigInt(balanceWei)) / 1e18;
+      setBalance(`${balanceEth.toFixed(4)} ETH`);
+    } catch (error) {
+      console.error("Failed to fetch balance:", error);
+      setBalance('N/A');
+    }
+
     const bestScore = await getPersonalBest(address);
     setPersonalBest(bestScore);
     setGameState('MENU');
@@ -93,8 +105,9 @@ const App: React.FC = () => {
     <main className="relative w-full h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans">
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
        {walletAddress && gameState !== 'CONNECTING_WALLET' && (
-        <div className="absolute top-4 right-4 z-20 bg-black/40 text-xs text-cyan-300 font-mono py-2 px-3 rounded-lg border border-white/10">
-          {truncateAddress(walletAddress)}
+        <div className="absolute top-4 right-4 z-20 bg-black/40 text-xs text-cyan-300 font-mono p-2 rounded-lg border border-white/10 flex flex-col items-end gap-1">
+          <span>{truncateAddress(walletAddress)}</span>
+          {balance !== null && <span className="text-yellow-400 font-sans font-bold text-sm">{balance}</span>}
         </div>
       )}
       <div className="relative z-10">
