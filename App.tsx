@@ -29,7 +29,8 @@ const App: React.FC = () => {
 
     try {
       const currentChainId = await provider.request({ method: 'eth_chainId' });
-      if (currentChainId === MONAD_NETWORK_CONFIG.chainId) {
+      // Use parseInt for a robust comparison against different formats (e.g., '0x1E' vs 30)
+      if (parseInt(currentChainId) === parseInt(MONAD_NETWORK_CONFIG.chainId)) {
         setIsOnMonadNetwork(true);
         const balanceWei = await provider.request({ method: 'eth_getBalance', params: [address, 'latest'] });
         const balanceEth = Number(BigInt(balanceWei)) / 1e18;
@@ -149,9 +150,12 @@ const App: React.FC = () => {
                 <div className="flex flex-col items-end">
                     <span>{truncateAddress(walletAddress)}</span>
                     {isOnMonadNetwork ? (
-                        balance !== null && (
-                            <span className="text-yellow-400 font-sans font-bold text-sm">{balance}</span>
-                        )
+                        <>
+                            <span className="text-green-400 text-[10px] text-right -mb-0.5">Connected to Monad</span>
+                            {balance !== null && (
+                                <span className="text-yellow-400 font-sans font-bold text-sm">{balance}</span>
+                            )}
+                        </>
                     ) : (
                         <span className="text-yellow-500 text-[10px] text-right mt-0.5">
                             Not on Monad network — balance unavailable
